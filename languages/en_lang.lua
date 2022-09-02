@@ -3,6 +3,6 @@ Locales["en_lang"] = {
     MenuSubTitle = "Select a Job",
     confirm      = "Confirm",
     empty        = "its empty",
-    jobgiven     = "you have been given the Job: ~o~",
-    gradegiven   = "Grade of: ~o~",
+    jobgiven     = "Your job is now: ~o~",
+    gradegiven   = "With the grade of: ~o~",
 }
