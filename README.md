@@ -26,7 +26,7 @@ Jobs = {
 
 
 #### INSTALATION
-- add `ensure mwg_jobmenu` to your file called `Resources.cfg`.
+- add `ensure mwg_jobmenu` to your `resources.cfg`.
 - restart server, enjoy.
 
 ### DEPENDENCIES
