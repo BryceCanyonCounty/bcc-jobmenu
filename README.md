@@ -10,15 +10,19 @@ Allows players to switch between jobs at will. Players set their own Job Grade a
 
 ### Configuration
 ```lua
+DisallowSetGrade = false -- Set to true and the default grade is set.
+
 Jobs = {
     {
-        label = "Police", -- Label shown on the menu
-        value = "police", -- job name
+        label = "Police", -- Label shown on the menu.
+        value = "police", -- job name.
+        defaultGrade = 1, -- Default Grade for the job. Used if DisallowSetGrade is true.
         desc = "Become a Police Officer!" -- Description shown (Might outline grade options)
     },
     {
-        label = "Hunter", -- Label shown on the menu
-        value = "hunter", -- job name
+        label = "Hunter", -- Label shown on the menu.
+        value = "hunter", -- job name.
+        defaultGrade = 1, -- Default Grade for the job. Used if DisallowSetGrade is true.
         desc = "Become a Bounty Hunter!" -- Description shown (Might outline grade options)
     },
 }
