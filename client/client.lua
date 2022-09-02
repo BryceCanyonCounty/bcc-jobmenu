@@ -57,6 +57,7 @@ function OpenMenu()
                         local jobgrade = tonumber(result)
                         if jobgrade then
                             TriggerServerEvent("mwg_jobmenu:setJob", jobname, jobgrade)
+                            menu.close()
                         end
                     else
                         TriggerEvent("vorp:TipRight", _U("empty"), 4000)
@@ -64,25 +65,8 @@ function OpenMenu()
                 end)
             else
                 TriggerServerEvent("mwg_jobmenu:setJob", jobname, data.current.defaultGrade)
+                menu.close()
             end
-
-            -- TriggerEvent("vorpinputs:advancedInput", json.encode(input), function(cb)
-            --     local result = tostring(cb)
-
-            --     if result ~= "" then
-            --         local splitstring = {}
-            --         for i in string.gmatch(result, "%S+") do
-            --             splitstring[#splitstring + 1] = i
-            --         end
-            --         local jobgrade = tonumber(splitstring[1])
-            --         local jobname = data.current.value
-            --         if jobgrade then
-            --             TriggerServerEvent("mwg_jobmenu:setJob", jobname, jobgrade)
-            --         end
-            --     else
-            --         TriggerEvent("vorp:TipRight", _U("empty"), 4000)
-            --     end
-            -- end)
         end,
         function(data, menu)
             menu.close()
