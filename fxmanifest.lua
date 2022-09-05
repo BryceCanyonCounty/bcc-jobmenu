@@ -20,8 +20,3 @@ shared_script {
 server_scripts {
     'server/*.lua',
 }
-
-files { -- Credits to https://github.com/LVRP-BEN/bl_coords for clipboard copy method
-    'html/index.html',
-    'html/index.js'
-}
