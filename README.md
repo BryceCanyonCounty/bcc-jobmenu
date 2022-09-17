@@ -39,7 +39,7 @@ Jobs = {
 
 
 ### SUPPORT
-Feel free to create an issue if you need assitance or have issues.
+Feel free to create an issue if you need assitance or have issues. You can also visit my [official support discord](https://discord.gg/BSmJQbtBQ8).
 
 ### Credits
 - Outsider for the Menu API and Inputs. I also used vorp_admin as a reference to using the menu api.
