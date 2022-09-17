@@ -1,9 +1,20 @@
 local Key = Config.Key
 local Inmenu
+local lastJobChange = 0
+local VORPcore = {}
 
 -- Get Menu
 TriggerEvent("menuapi:getData", function(call)
     MenuData = call
+end)
+
+-- Get Core
+TriggerEvent("getCore", function(core)
+    VORPcore = core
+end)
+
+RegisterNetEvent("mwg_jobmenu:setLastJobChange", function()
+    lastJobChange = GetGameTimer()
 end)
 
 Citizen.CreateThread(function()
@@ -11,8 +22,14 @@ Citizen.CreateThread(function()
         local player = PlayerPedId()
         local isDead = IsPedDeadOrDying(player)
         if IsControlJustPressed(0, Key) and not isDead and not Inmenu then
-            MenuData.CloseAll()
-            OpenMenu()
+            local timeSinceJobChange = math.floor(((GetGameTimer() - lastJobChange) / 1000) / 60)
+            if timeSinceJobChange >= Config.jobChangeDelay or lastJobChange == 0 then
+                MenuData.CloseAll()
+                OpenMenu()
+            else
+                local nextJobChange = Config.jobChangeDelay - timeSinceJobChange
+                VORPcore.NotifyRightTip(_U("JobChangeDelay") .. nextJobChange .. _U("TimeFormat"), 4000)
+            end
         end
         Citizen.Wait(10)
     end
@@ -60,7 +77,7 @@ function OpenMenu()
                             menu.close()
                         end
                     else
-                        TriggerEvent("vorp:TipRight", _U("empty"), 4000)
+                        VORPcore.NotifyRightTip(_U("empty"), 4000)
                     end
                 end)
             else
