@@ -13,7 +13,7 @@ TriggerEvent("getCore", function(core)
     VORPcore = core
 end)
 
-RegisterNetEvent("mwg_jobmenu:setLastJobChange", function()
+RegisterNetEvent("bcc_jobmenu:setLastJobChange", function()
     lastJobChange = GetGameTimer()
 end)
 
@@ -73,7 +73,7 @@ function OpenMenu()
                     if result ~= "" then
                         local jobgrade = tonumber(result)
                         if jobgrade then
-                            TriggerServerEvent("mwg_jobmenu:setJob", jobname, jobgrade)
+                            TriggerServerEvent("bcc_jobmenu:setJob", jobname, jobgrade)
                             menu.close()
                         end
                     else
@@ -81,7 +81,7 @@ function OpenMenu()
                     end
                 end)
             else
-                TriggerServerEvent("mwg_jobmenu:setJob", jobname, data.current.defaultGrade)
+                TriggerServerEvent("bcc_jobmenu:setJob", jobname, data.current.defaultGrade)
                 menu.close()
             end
         end,
