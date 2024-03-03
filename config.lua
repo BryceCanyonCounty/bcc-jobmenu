@@ -88,7 +88,7 @@ Config = {
         },
         {
             label = "Stable Man",
-            value = "bankman",
+            value = "stableman",
             desc = "I guess you work in the stables?",
             jobGrades = false
         }
