@@ -20,3 +20,8 @@ shared_script {
 server_scripts {
     'server/*.lua',
 }
+
+dependencies {
+    'vorp_core',
+    'feather-menu'
+}
