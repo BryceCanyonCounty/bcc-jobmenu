@@ -1,10 +1,9 @@
 Config = {
-    --add your language
-    defaultlang = "en_lang",
+    defaultlang = "en_lang", -- Default language
 
-    Key = 0x446258B6,   --PGUP open menu
+    Key = 0x446258B6,        --PGUP open menu
 
-    jobChangeDelay = 1, -- Time in minutes
+    jobChangeDelay = 10,     -- Time in minutes
 
     Jobs = {
         {

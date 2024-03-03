@@ -1,49 +1,36 @@
 # Job Menu
 
-#### Description
+## Description
 
-Allows players to switch between jobs at will. Players set their own Job Grade after selecting a job from the menu.
+Allows players to switch between jobs at will.
 
-### FEATURES
+## FEATURES
 
-- Configurable job menu open to all users
-- Set job grade between 1 and 99
+- Configurable job menu for all players.
+- Delay between changing jobs.
+- Job Grades
+  - Preset Job Grades with labels.
+  - Slider to allow the user to pick what ever level they want.
+  - Disable selecting a job grade (defaults to 1)
 
-### Configuration
+## Configuration
 
-```lua
-DisallowSetGrade = false -- Set to true and the default grade is set.
+See the config.lua for more information on configuration.
 
-Jobs = {
-    {
-        label = "Police", -- Label shown on the menu.
-        value = "police", -- job name.
-        defaultGrade = 1, -- Default Grade for the job. Used if DisallowSetGrade is true.
-        desc = "Become a Police Officer!" -- Description shown (Might outline grade options)
-    },
-    {
-        label = "Hunter", -- Label shown on the menu.
-        value = "hunter", -- job name.
-        defaultGrade = 1, -- Default Grade for the job. Used if DisallowSetGrade is true.
-        desc = "Become a Bounty Hunter!" -- Description shown (Might outline grade options)
-    },
-}
-```
+## INSTALATION
 
-#### INSTALATION
-
-- add `ensure bcc_jobmenu` to your `resources.cfg`.
+- add `ensure bcc-jobmenu` to your `server.cfg` below feather-menu.
 - restart server, enjoy.
 
-### DEPENDENCIES
+## DEPENDENCIES
 
-- Lua version of [VORP_INPUTS](https://github.com/VORPCORE/vorp_inputs-lua)
-- [menuapi](https://github.com/outsider31000/menuapi)
+- Newest version of Vorp Core
+- [Feather Menu](https://github.com/FeatherFramework/feather-menu)
 
-### SUPPORT
+## SUPPORT
 
-Feel free to create an issue if you need assitance or have issues. You can also visit my [official support discord](https://discord.gg/BSmJQbtBQ8).
+For the quickest support join our discord [Bryce Canyon County Scripts](https://discord.gg/bNDpwruqwX)
 
-### Credits
+## Credits
 
-- Outsider for the Menu API and Inputs. I also used vorp_admin as a reference to using the menu api.
+- Bytesized for the much improved menu system.
