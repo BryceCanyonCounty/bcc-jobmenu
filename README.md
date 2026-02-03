@@ -1,5 +1,10 @@
 # Job Center in Location
 
+    Add promp in location for open menu by G
+    Add ped in location
+    add blip in location
+    possibility add multple location in config file
+
 ## Description
 
 Allows players to switch between jobs at will.
