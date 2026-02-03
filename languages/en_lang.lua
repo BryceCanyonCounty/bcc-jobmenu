@@ -11,4 +11,5 @@ Locales["en_lang"] = {
     JobChangeDelay    = "Change job in: ~o~",
     TimeFormat        = " minutes",
     Back              = "Back",
+    messagejobcentre      = "Job Center",
 }
