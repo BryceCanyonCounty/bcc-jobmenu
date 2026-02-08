@@ -1,9 +1,4 @@
-# Job Center in Location
-
-    Add promp in location for open menu by G
-    Add ped in location
-    add blip in location
-    possibility add multple location in config file
+# bcc-jobmenu
 
 ## Description
 
@@ -29,7 +24,7 @@ See the config.lua for more information on configuration.
 
 ## DEPENDENCIES
 
-- Newest version of Vorp Core
+- [vorp_core](https://github.com/VORPCORE/vorp-core-lua)
 - [Feather Menu](https://github.com/FeatherFramework/feather-menu)
 
 ## SUPPORT
@@ -39,3 +34,4 @@ For the quickest support join our discord [Bryce Canyon County Scripts](https://
 ## Credits
 
 - Bytesized for the much improved menu system.
+- RPF Studio for Job Center update
