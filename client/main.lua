@@ -1,186 +1,194 @@
 local LastJobChange = 0
-local VORPcore = exports.vorp_core:GetCore()
-local FeatherMenu = exports['feather-menu'].initiate()
+local ready = false
 
-CreateThread(function()
-    while true do
-        Wait(0)
-        local playerPed = PlayerPedId()
+local ShopPrompt = 0
+local ShopGroup = GetRandomIntInRange(0, 0xffffff)
+local InMenu = false
 
-        if IsControlJustPressed(0, Config.Key) and not IsEntityDead(playerPed) then
-            local timeSinceJobChange = math.floor(((GetGameTimer() - LastJobChange) / 1000) / 60)
-            if timeSinceJobChange >= Config.jobChangeDelay or LastJobChange == 0 then
-                MainMenu()
-            else
-                local nextJobChange = Config.jobChangeDelay - timeSinceJobChange
-                VORPcore.NotifyRightTip(_U("JobChangeDelay") .. nextJobChange .. _U("TimeFormat"), 4000)
-            end
-        end
+local function StartPrompt()
+    if not ShopGroup then
+        DBG:Error('ShopGroup not initialized')
+        return
     end
+
+    if not Config or not Config.keys or not Config.keys.menu then
+        DBG:Error('Menu key is not configured')
+        return
+    end
+
+    ShopPrompt = UiPromptRegisterBegin()
+    if not ShopPrompt or ShopPrompt == 0 then
+        DBG:Error("Failed to register ShopPrompt")
+        return
+    end
+    UiPromptSetControlAction(ShopPrompt, Config.keys.menu)
+    UiPromptSetText(ShopPrompt, VarString(10, 'LITERAL_STRING', _U('shopPrompt')))
+    UiPromptSetVisible(ShopPrompt, true)
+    Citizen.InvokeNative(0x74C7D7B72ED0D3CF, ShopPrompt, 'MEDIUM_TIMED_EVENT') -- PromptSetStandardizedHoldMode
+    UiPromptSetGroup(ShopPrompt, ShopGroup, 0)
+    UiPromptRegisterEnd(ShopPrompt)
+
+     DBG:Success('Menu prompt started successfully')
+end
+
+AddEventHandler('onClientResourceStart', function(resourceName)
+    if (GetCurrentResourceName() ~= resourceName) then return end
+
+    ready = true
 end)
 
-function MainMenu()
-    -- Create the main menu
-    local jobMenu = FeatherMenu:RegisterMenu('bcc-jobmenu:MainMenu', {
-        top = '40%',
-        left = '20%',
-        ['720width'] = '500px',
-        ['1080width'] = '600px',
-        ['2kwidth'] = '700px',
-        ['4kwidth'] = '900px',
-        style = {},
-        contentslot = {
-            style = {
-                ['height'] = '400px',
-                ['min-height'] = '400px'
-            }
-        },
-        draggable = true,
-        canclose = true,
-    })
+local function isShopClosed(siteCfg)
+    local hour = GetClockHours()
+    local hoursActive = siteCfg.shop.hours.active
 
-    -- Create the job select page
-    local selectJob = jobMenu:RegisterPage('job:select')
-    selectJob:RegisterElement('header', {
-        value = _U('MenuTitle'),
-        slot = "header",
-        style = {
-            ['color'] = '#999'
-        }
-    })
-
-    selectJob:RegisterElement('subheader', {
-        value = _U('MenuSubTitle'),
-        slot = "header",
-        style = {
-            ['color'] = '#CC9900',
-            ['font-size'] = '18px'
-        }
-    })
-
-    selectJob:RegisterElement('line', {
-        slot = "header",
-        style = {}
-    })
-
-    for job, jobDetails in ipairs(Config.Jobs) do
-        selectJob:RegisterElement('button', {
-            label = jobDetails.label,
-            style = {
-                ['color'] = '#E0E0E0'
-            },
-            id = job,
-        }, function(data)
-            if (Config.Jobs[data.id].jobGrades) then
-                JobGradeMenu(data.id)
-            else
-                SetJobInfo(Config.Jobs[data.id].value, Config.Jobs[data.id].label, 1, 'One')
-                jobMenu:Close()
-            end
-        end)
+    if not hoursActive then
+        return false
     end
 
-    jobMenu:Open({
-        startupPage = selectJob
-    })
-end
+    local openHour = siteCfg.shop.hours.open
+    local closeHour = siteCfg.shop.hours.close
 
-function JobGradeMenu(job)
-    -- Create the job grade menu
-    local jobGradeMenu = FeatherMenu:RegisterMenu('bcc-jobmenu:JobGradeMenu', {
-        top = '40%',
-        left = '20%',
-        ['720width'] = '500px',
-        ['1080width'] = '600px',
-        ['2kwidth'] = '700px',
-        ['4kwidth'] = '900px',
-        style = {},
-        contentslot = {
-            style = {
-                ['height'] = '400px',
-                ['min-height'] = '400px'
-            }
-        },
-        draggable = true,
-        canclose = true,
-    })
-
-    -- Create the job grade select page
-    local selectJobGrade = jobGradeMenu:RegisterPage('grade:select')
-    selectJobGrade:RegisterElement('header', {
-        value = Config.Jobs[job].label .. ' ' .. _U('GradeMenuTitle'),
-        slot = "header",
-        style = {
-            ['color'] = '#999'
-        }
-    })
-
-    selectJobGrade:RegisterElement('subheader', {
-        value = _U('GradeMenuSubTitle'),
-        slot = "header",
-        style = {
-            ['color'] = '#CC9900',
-            ['font-size'] = '18px'
-        }
-    })
-
-    selectJobGrade:RegisterElement('line', {
-        slot = "header",
-        style = {}
-    })
-
-    local jobGrade = 1
-    if (type(Config.Jobs[job].jobGrades) == 'table') then
-        for grade, gradeDetails in ipairs(Config.Jobs[job].jobGrades) do
-            selectJobGrade:RegisterElement('button', {
-                label = gradeDetails.label,
-                style = {
-                    ['color'] = '#E0E0E0'
-                },
-                id = grade,
-            }, function(data)
-                SetJobInfo(Config.Jobs[job].value, Config.Jobs[job].label, Config.Jobs[job].jobGrades[data.id].grade,
-                    Config.Jobs[job].jobGrades[data.id].label)
-                jobGradeMenu:Close()
-            end)
-        end
+    if openHour < closeHour then
+        -- Normal: shop opens and closes on the same day
+        return hour < openHour or hour >= closeHour
     else
-        selectJobGrade:RegisterElement('slider', {
-            label = _U('JobGrade'),
-            start = 1,
-            min = 1,
-            max = Config.MaxJobGrade,
-            style = {
-                ['margin-top'] = '20px'
-            }
-        }, function(data)
-            jobGrade = data.value
-        end)
+        -- Overnight: shop closes on the next day
+        return hour < openHour and hour >= closeHour
+    end
+end
 
-        selectJobGrade:RegisterElement('button', {
-            label = _U('confirm'),
-            style = {
-                ['color'] = '#E0E0E0'
-            },
-        }, function(data)
-            SetJobInfo(Config.Jobs[job].value, Config.Jobs[job].label, jobGrade, jobGrade)
-            jobGradeMenu:Close()
-        end)
+local function ManageSiteBlip(site, closed)
+    local siteCfg = Sites[site]
+
+    if (closed and not siteCfg.blip.show.closed) or (not siteCfg.blip.show.open) then
+        if siteCfg.Blip then
+            RemoveBlip(siteCfg.Blip)
+            siteCfg.Blip = nil
+        end
+        return
     end
 
-    selectJobGrade:RegisterElement('button', {
-        label = _U('Back'),
-        style = {
-            ['color'] = '#E0E0E0'
-        },
-    }, function(data)
-        MainMenu()
-    end)
+    if not siteCfg.Blip then
+        siteCfg.Blip = Citizen.InvokeNative(0x554d9d53f696d002, 1664425300, siteCfg.npc.coords) -- BlipAddForCoords
+        SetBlipSprite(siteCfg.Blip, siteCfg.blip.sprite, true)
+        Citizen.InvokeNative(0x9CB1A1623062F402, siteCfg.Blip, siteCfg.blip.name)               -- SetBlipName
+    end
 
-    jobGradeMenu:Open({
-        startupPage = selectJobGrade
-    })
+    local color = closed and siteCfg.blip.color.closed or siteCfg.blip.color.open
+
+    if Config.BlipColors[color] then
+        Citizen.InvokeNative(0x662D364ABF16DE2F, siteCfg.Blip, joaat(Config.BlipColors[color])) -- BlipAddModifier
+    else
+        DBG:Error('Blip color not defined for color: ' .. tostring(color))
+    end
 end
+
+local function LoadModel(model, modelName)
+    if not IsModelValid(model) then
+        return print('Invalid model:', modelName)
+    end
+
+    if not HasModelLoaded(model) then
+        RequestModel(model, false)
+
+        local timeout = 10000
+        local startTime = GetGameTimer()
+
+        while not HasModelLoaded(model) do
+            if GetGameTimer() - startTime > timeout then
+                print('Failed to load model:', modelName)
+                return
+            end
+            Wait(10)
+        end
+    end
+end
+
+local function AddNPC(site)
+    local siteCfg = Sites[site]
+    local coords = siteCfg.npc.coords
+
+    if not siteCfg.NPC then
+        local modelName = siteCfg.npc.model
+        local model = joaat(modelName)
+        LoadModel(model, modelName)
+
+        siteCfg.NPC = CreatePed(model, coords.x, coords.y, coords.z -1, siteCfg.npc.heading, false, false, false, false)
+        Citizen.InvokeNative(0x283978A15512B2FE, siteCfg.NPC, true) -- SetRandomOutfitVariation
+
+        SetEntityCanBeDamaged(siteCfg.NPC, false)
+        SetEntityInvincible(siteCfg.NPC, true)
+        Wait(500)
+        FreezeEntityPosition(siteCfg.NPC, true)
+        SetBlockingOfNonTemporaryEvents(siteCfg.NPC, true)
+        SetPedCanRagdoll(siteCfg.NPC, false)
+    end
+end
+
+local function RemoveNPC(site)
+    local siteCfg = Sites[site]
+
+    if siteCfg.NPC then
+        DeleteEntity(siteCfg.NPC)
+        siteCfg.NPC = nil
+    end
+end
+
+CreateThread(function()
+
+    repeat Wait(2000) until LocalPlayer.state.IsInSession
+    StartPrompt()
+
+    while true do
+        if not ready then return end
+
+        local playerPed = PlayerPedId()
+        local playerCoords = GetEntityCoords(playerPed)
+        local sleep = 1000
+
+        if InMenu or IsEntityDead(playerPed) then
+            Wait(1000)
+            goto END
+        end
+
+        for site, siteCfg in pairs(Sites) do
+            local distance = #(playerCoords - siteCfg.npc.coords)
+            IsShopClosed = isShopClosed(siteCfg)
+
+            ManageSiteBlip(site, IsShopClosed)
+
+            if distance > siteCfg.npc.distance or IsShopClosed then
+                RemoveNPC(site)
+            elseif siteCfg.npc.active then
+                AddNPC(site)
+            end
+
+            if distance <= siteCfg.shop.distance then
+                sleep = 0
+                local promptText = IsShopClosed and siteCfg.shop.name .. _U('hours') .. siteCfg.shop.hours.open .. _U('to') ..
+                siteCfg.shop.hours.close .. _U('hundred') or siteCfg.shop.prompt
+
+                UiPromptSetActiveGroupThisFrame(ShopGroup, VarString(10, 'LITERAL_STRING', promptText), 1, 0, 0, 0)
+                UiPromptSetEnabled(ShopPrompt, not IsShopClosed)
+
+                if not IsShopClosed then
+                    if Citizen.InvokeNative(0xE0F65F0640EF0617, ShopPrompt) then -- PromptHasHoldModeCompleted
+                        Wait(500)
+                        local timeSinceJobChange = math.floor(((GetGameTimer() - LastJobChange) / 1000) / 60)
+                        if timeSinceJobChange >= Config.jobChangeDelay or LastJobChange == 0 then
+                            MainMenu()
+                        else
+                            local nextJobChange = Config.jobChangeDelay - timeSinceJobChange
+                            Core.NotifyRightTip(_U("JobChangeDelay") .. nextJobChange .. _U("TimeFormat"), 4000)
+                        end
+                    end
+                end
+            end
+        end
+        ::END::
+        Wait(sleep)
+    end
+end)
 
 function SetJobInfo(job, label, grade, grade_label)
     local jobInfo = {
@@ -190,9 +198,26 @@ function SetJobInfo(job, label, grade, grade_label)
         grade_label = grade_label,
     }
 
-    local jobChanged = VORPcore.Callback.TriggerAwait('bcc:set_job', jobInfo)
+    local jobChanged = Core.Callback.TriggerAwait('bcc:set_job', jobInfo)
 
     if jobChanged then
         LastJobChange = GetGameTimer()
     end
 end
+
+AddEventHandler("onResourceStop", function(resourceName)
+    if resourceName ~= GetCurrentResourceName() then return end
+
+    ClearPedTasksImmediately(PlayerPedId())
+
+    for _, siteCfg in pairs(Sites) do
+        if siteCfg.Blip then
+            RemoveBlip(siteCfg.Blip)
+            siteCfg.Blip = nil
+        end
+        if siteCfg.NPC then
+            DeleteEntity(siteCfg.NPC)
+            siteCfg.NPC = nil
+        end
+    end
+end)
